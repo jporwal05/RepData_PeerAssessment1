@@ -7,7 +7,8 @@ output:
 
 ## Loading required libraries
 
-```{r results='hide', message=FALSE, warning=FALSE}
+
+```r
 library(dplyr)
 library(lattice)
 ```
@@ -15,14 +16,16 @@ library(lattice)
 ## Loading and preprocessing the data
 
 Read data:
-```{r, echo=TRUE}
+
+```r
 unzip("activity.zip", overwrite = T)
 
 ad <- read.csv("activity.csv")
 ```
 
 Convert to tbl_df and tidy the data:
-```{r, echo=TRUE}
+
+```r
 tdf_ad <- tbl_df(ad)
 
 colnames(tdf_ad) <- toupper(colnames(tdf_ad))
@@ -35,7 +38,8 @@ tdf_ad <- tdf_ad %>%
 ## What is mean total number of steps taken per day?
 
 Prepare data to show average steps per day:
-```{r, echo=TRUE}
+
+```r
 tdf_adm <- tdf_ad %>% 
     select(DATE, STEPS) %>% 
     filter(!is.na(STEPS)) %>% 
@@ -44,7 +48,8 @@ tdf_adm <- tdf_ad %>%
 ```
 
 Histogram of average steps taken each day:
-```{r, echo=TRUE}
+
+```r
 par(col.sub = "grey", cex.sub = 0.7)
 hist <- with(tdf_adm, hist(STEPS, col = "Red", 
           xlab = "Average steps", 
@@ -59,14 +64,17 @@ with(hist, text(x = mids,
                 offset = 0.20))
 ```
 
-Mean of steps taken per day: **`r mean(tdf_adm$STEPS)`**
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
-Median of steps taken per day: **`r median(tdf_adm$STEPS)`**
+Mean of steps taken per day: **37.3825996**
+
+Median of steps taken per day: **37.3784722**
 
 ## What is the average daily activity pattern?
 
 Prepare data to show average steps across all days in 5 min interval:
-```{r, echo=TRUE}
+
+```r
 tdf_admi <- tdf_ad %>% 
     select(STEPS, INTERVAL) %>% 
     filter(!is.na(STEPS)) %>% 
@@ -75,7 +83,8 @@ tdf_admi <- tdf_ad %>%
 ```
 
 Time series graph of average steps across all days in 5 min interval:
-```{r, echo=TRUE}
+
+```r
 par(col.sub = "grey", cex.sub = 0.7)
 with(tdf_admi, plot(INTERVAL, STEPS, 
                    col = "Red", 
@@ -86,34 +95,41 @@ with(tdf_admi, plot(INTERVAL, STEPS,
                    type = "l"))
 ```
 
-Interval having Max average steps across all days: **`r tdf_admi[tdf_admi$STEPS == max(tdf_admi$STEPS), "INTERVAL"]`**
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
+Interval having Max average steps across all days: **835**
 
 ## Imputing missing values
 
 ##### Fill missing values for an interval by taking average of steps taken in that interval:
 
 - Create new dataset:
-```{r, echo=TRUE}
+
+```r
 tdf_admd <- tdf_ad
 ```
 
 - Find indexes where steps are NA:
-```{r, echo=TRUE}
+
+```r
 ina <- which(is.na(tdf_admd$STEPS))
 ```
 
 - Filter rows where steps are NA:
-```{r, echo=TRUE}
+
+```r
 inad <- tdf_admd[ina, ]
 ```
 
 - Take dataset of average steps by interval and filter only intervals where steps are NA:
-```{r, echo=TRUE}
+
+```r
 inads <- tdf_admi[which(tdf_admi$INTERVAL %in% inad$INTERVAL), ]
 ```
 
 - Replace all those NA in steps with average steps of interval matching the interval of NA steps:
-```{r, echo=TRUE}
+
+```r
 for (i in ina) {
     if (tdf_admd[[3]][i] %in% inads$INTERVAL) {
         tdf_admd[[1]][[i]] = inads[[1]][[which(tdf_admd[[3]][i] 
@@ -123,7 +139,8 @@ for (i in ina) {
 ```
 
 Prepare data to show average steps per day with missing values imputed:
-```{r, echo=TRUE}
+
+```r
 tdf_admdm <- tdf_admd %>% 
     select(STEPS, DATE) %>% 
     filter(!is.na(STEPS)) %>% 
@@ -132,7 +149,8 @@ tdf_admdm <- tdf_admd %>%
 ```
 
 Histogram of average steps taken each day with missing values imputed:
-```{r, echo=TRUE}
+
+```r
 par(col.sub = "grey", cex.sub = 0.7)
 hist <- with(tdf_admdm, hist(STEPS, col = "Red", 
           xlab = "Average steps", 
@@ -147,9 +165,11 @@ with(hist, text(x = mids,
                 offset = 0.20))
 ```
 
-Mean of steps taken per day: **`r mean(tdf_admdm$STEPS)`**
+![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
-Median of steps taken per day: **`r median(tdf_admdm$STEPS)`**
+Mean of steps taken per day: **32.4799636**
+
+Median of steps taken per day: **36.09375**
 
 **Comparing from previous data we can see that the mean of steps taken per day drops a few units after imputing the missing values.**
 
@@ -157,7 +177,8 @@ Median of steps taken per day: **`r median(tdf_admdm$STEPS)`**
 
 Add two factor column to the data which would indicate a date to be a weekday or weekend: 
 
-```{r, echo=TRUE}
+
+```r
 tdf_admd <- mutate(tdf_admd, DAY = "weekday")
 iwd <- which(weekdays(tdf_admd$DATE, T) %in% c("Sat", "Sun"))
 tdf_admd[iwd, "DAY"] <- "weekend"
@@ -165,7 +186,8 @@ tdf_admd <- mutate(tdf_admd, DAY = as.factor(DAY))
 ```
 
 Prepare data to show average steps by weekday/weekend for 5 min interval with missing values imputed:
-```{r, echo=TRUE}
+
+```r
 tdf_admdw <- tdf_admd %>% 
     filter(!is.na(STEPS)) %>% 
     group_by(INTERVAL, DAY) %>% 
@@ -173,7 +195,8 @@ tdf_admdw <- tdf_admd %>%
 ```
 
 Panel plot comparing average steps taken over a weekday/weekend in 5 min interval:
-```{r, echo=TRUE}
+
+```r
 s <- trellis.par.get("par.sub.text")
 s$cex <- 0.7
 s$col <- "grey"
@@ -183,5 +206,7 @@ with(tdf_admdw, xyplot(STEPS~INTERVAL|DAY, type = "l",
                        ylab = "Average steps", 
                        sub = paste("Plot by JP: ", Sys.Date(), sep = "")))
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-17-1.png)<!-- -->
 
 **It clearly appears that there are differences in activity patterns on weekdays/weekend.**
