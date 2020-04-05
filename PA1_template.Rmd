@@ -5,21 +5,121 @@ output:
     keep_md: true
 ---
 
+## Loading required libraries
+
+```{r results='hide', message=FALSE, warning=FALSE}
+library(dplyr)
+```
 
 ## Loading and preprocessing the data
 
+Read data:
+```{r, echo=TRUE}
+unzip("activity.zip", overwrite = T)
+
+ad <- read.csv("activity.csv")
+```
+
+Convert to tbl_df and tidy the data:
+```{r, echo=TRUE}
+tdf_ad <- tbl_df(ad)
+
+colnames(tdf_ad) <- toupper(colnames(tdf_ad))
+
+tdf_ad <- tdf_ad %>% 
+    mutate(DATE = as.Date(DATE, "%Y-%m-%d"))
+```
 
 
 ## What is mean total number of steps taken per day?
 
+Prepare data to show average steps per day:
+```{r, echo=TRUE}
+tdf_adm <- tdf_ad %>% 
+    select(DATE, STEPS) %>% 
+    filter(!is.na(STEPS)) %>% 
+    group_by(DATE) %>% 
+    summarise(STEPS = mean(STEPS))
+```
 
+Histogram of average steps taken each day:
+```{r, echo=TRUE}
+par(col.sub = "grey", cex.sub = 0.7)
+hist <- with(tdf_adm, hist(STEPS, col = "Red", 
+          xlab = "Average steps", 
+          ylab = "Frequency", 
+          main = "Average steps taken each day", 
+          sub = paste("Plot by JP: ", Sys.Date(), sep = "")))
+with(hist, text(x = mids, 
+                y = counts, 
+                labels = counts, 
+                cex = 0.5, 
+                pos = 3, 
+                offset = 0.20))
+```
+
+Mean of steps taken per day: **`r mean(tdf_adm$STEPS)`**
+
+Median of steps taken per day: **`r median(tdf_adm$STEPS)`**
 
 ## What is the average daily activity pattern?
 
+Prepare data to show average steps across all days in 5 min interval:
+```{r, include=FALSE}
+tdf_admi <- tdf_ad %>% 
+    select(STEPS, INTERVAL) %>% 
+    filter(!is.na(STEPS)) %>% 
+    group_by(INTERVAL) %>% 
+    summarise(STEPS = mean(STEPS))
+```
 
+Time series graph of average steps across all days in 5 min interval:
+```{r, echo=TRUE}
+par(col.sub = "grey", cex.sub = 0.7)
+with(tdf_admi, plot(INTERVAL, STEPS, 
+                   col = "Red", 
+                   xlab = "5 Min Interval", 
+                   ylab = "Average steps across all days", 
+                   main = "Average steps taken in 5 min interval", 
+                   sub = paste("Plot by JP: ", Sys.Date(), sep = ""), 
+                   type = "l"))
+```
+
+Interval having Max average steps across all days: **`r tdf_admi[tdf_admi$STEPS == max(tdf_admi$STEPS), "INTERVAL"]`**
 
 ## Imputing missing values
 
+Fill missing values for an interval by taking average of steps taken in that interval:
+```{r, echo=TRUE}
+tdf_admd <- tdf_ad
 
+ina <- which(is.na(tdf_admd$STEPS))
+
+inad <- tdf_admd[ina, ]
+
+inads <- tdf_admi[which(tdf_admi$INTERVAL %in% inad$INTERVAL), ]
+
+for (i in ina) {
+    if (tdf_admd[[3]][i] %in% inads$INTERVAL) {
+        tdf_admd[[1]][[i]] = inads[[1]][[which(tdf_admd[[3]][i] %in% inads$INTERVAL)]]
+    }
+}
+```
+
+Histogram of average steps taken each day:
+```{r, echo=TRUE}
+par(col.sub = "grey", cex.sub = 0.7)
+hist <- with(tdf_admd, hist(STEPS, col = "Red", 
+          xlab = "Average steps", 
+          ylab = "Frequency", 
+          main = "Average steps taken each day", 
+          sub = paste("Plot by JP: ", Sys.Date(), sep = "")))
+with(hist, text(x = mids, 
+                y = counts, 
+                labels = counts, 
+                cex = 0.5, 
+                pos = 3, 
+                offset = 0.20))
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
