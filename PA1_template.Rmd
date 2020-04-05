@@ -152,7 +152,7 @@ Mean of steps taken per day: **`r mean(tdf_admdm$STEPS)`**
 
 Median of steps taken per day: **`r median(tdf_admdm$STEPS)`**
 
-**Comparing from previous data we can see that the mean of steps taken per day increases by a few Kilo units after imputing the missing values.**
+**Comparing from previous data we can see that the mean of steps taken per day decreses by a few units after imputing the missing values.**
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
