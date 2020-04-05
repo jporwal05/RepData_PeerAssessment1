@@ -5,12 +5,13 @@ output:
     keep_md: true
 ---
 
-## Loading required libraries
+## Loading required libraries and setup
 
 
 ```r
 library(dplyr)
 library(lattice)
+options(scipen=999)
 ```
 
 ## Loading and preprocessing the data
@@ -37,24 +38,24 @@ tdf_ad <- tdf_ad %>%
 
 ## What is mean total number of steps taken per day?
 
-Prepare data to show average steps per day:
+Prepare data to show total steps per day:
 
 ```r
 tdf_adm <- tdf_ad %>% 
     select(DATE, STEPS) %>% 
     filter(!is.na(STEPS)) %>% 
     group_by(DATE) %>% 
-    summarise(STEPS = mean(STEPS))
+    summarise(STEPS = sum(STEPS))
 ```
 
-Histogram of average steps taken each day:
+Histogram of total steps taken each day:
 
 ```r
 par(col.sub = "grey", cex.sub = 0.7)
 hist <- with(tdf_adm, hist(STEPS, col = "Red", 
-          xlab = "Average steps", 
+          xlab = "Total steps", 
           ylab = "Frequency", 
-          main = "Average steps taken each day", 
+          main = "Total steps taken each day", 
           sub = paste("Plot by JP: ", Sys.Date(), sep = "")))
 with(hist, text(x = mids, 
                 y = counts, 
@@ -66,9 +67,9 @@ with(hist, text(x = mids,
 
 ![](PA1_template_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
-Mean of steps taken per day: **37.3825996**
+Mean of steps taken per day: **10766.1886792**
 
-Median of steps taken per day: **37.3784722**
+Median of steps taken per day: **10765**
 
 ## What is the average daily activity pattern?
 
@@ -138,24 +139,24 @@ for (i in ina) {
 }
 ```
 
-Prepare data to show average steps per day with missing values imputed:
+Prepare data to show total steps per day with missing values imputed:
 
 ```r
 tdf_admdm <- tdf_admd %>% 
     select(STEPS, DATE) %>% 
     filter(!is.na(STEPS)) %>% 
     group_by(DATE) %>% 
-    summarise(STEPS = mean(STEPS))
+    summarise(STEPS = sum(STEPS))
 ```
 
-Histogram of average steps taken each day with missing values imputed:
+Histogram of total steps taken each day with missing values imputed:
 
 ```r
 par(col.sub = "grey", cex.sub = 0.7)
 hist <- with(tdf_admdm, hist(STEPS, col = "Red", 
-          xlab = "Average steps", 
+          xlab = "Total steps", 
           ylab = "Frequency", 
-          main = "Average steps taken each day", 
+          main = "Total steps taken each day", 
           sub = paste("Plot by JP: ", Sys.Date(), sep = "")))
 with(hist, text(x = mids, 
                 y = counts, 
@@ -167,11 +168,11 @@ with(hist, text(x = mids,
 
 ![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
-Mean of steps taken per day: **32.4799636**
+Mean of steps taken per day: **9354.2295082**
 
-Median of steps taken per day: **36.09375**
+Median of steps taken per day: **10395**
 
-**Comparing from previous data we can see that the mean of steps taken per day drops a few units after imputing the missing values.**
+**Comparing from previous data we can see that the mean of steps taken per day increases by a few Kilo units after imputing the missing values.**
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
